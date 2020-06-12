@@ -1,0 +1,126 @@
+using UnityEngine;
+using System.Collections;
+
+public class SanglierScript : MonoBehaviour {
+
+	public bool patrol;
+	public bool attack = false;
+
+	public float maxSpeed;
+	public Transform[] patrolPoints;
+	public Transform targetPlayer;
+	private Vector3 lastPlayerPosition;
+	private int currentPoint;
+	public Rigidbody2D rgEnemy;
+	private Animator anim;
+
+
+	// Use this for initialization
+	void Start () 
+	{
+		targetPlayer = GameObject.FindGameObjectWithTag ("Player").transform;
+		anim = GetComponent<Animator> ();
+//		rgEnemy = gameObject.GetComponent<Rigidbody2D> ().velocity = new Vector2 (x, y);
+	}
+	
+	// Update is called once per frame
+	void Update () 
+	{
+		Patrol ();
+		//Attack ();
+	}
+
+	public void Patrol()
+	{
+		
+		if (transform.position.x == patrolPoints [currentPoint].position.x) 
+		{
+			currentPoint++;
+			transform.localScale = new Vector3 (-0.25f, 0.25f, 0.25f);
+		}
+
+		if (currentPoint >= patrolPoints.Length)
+		{
+			currentPoint = 0;
+			transform.localScale = new Vector3 (0.25f, 0.25f, 0.25f);
+		}
+
+		if (attack == true) 
+		{
+			patrol = false;
+			ChargeAttack ();
+		}
+
+		Vector3 direction = new Vector3(patrolPoints[currentPoint].position.x, this.transform.position.y, this.transform.position.z);
+		transform.position = Vector2.MoveTowards(transform.position, direction, maxSpeed * Time.deltaTime);
+	}
+
+	/*public void Attack()
+	{
+		if (attack == true) 
+		{
+			
+			lastPlayerPosition = targetPlayer.transform.position;
+
+			Vector2 direction = new Vector2(targetPlayer.position.x, this.transform.position.y);
+			transform.position = Vector2.MoveTowards(transform.position, direction, maxSpeed * Time.deltaTime);
+		}
+	}*/
+
+
+
+	void OnTriggerEnter2D (Collider2D other)
+	{
+		if (other.tag == "Player") 
+		{
+			//Debug.Log("Find you !");
+			attack = true;
+			ChargeAttackCo ();
+		}
+	}
+
+	void OnTriggerExit2D (Collider2D other)
+	{
+		if (other.tag == "Player") 
+		{
+			//Debug.Log ("What ?!");
+			attack = false;
+			WaitBeforeAttackingAgain ();
+		}
+	}
+	public void ChargeAttackCo()
+	{
+		StartCoroutine (ChargeAttack());
+	}
+
+	public void WaitBeforeAttackingAgain()
+	{
+		StartCoroutine (WaitBeforeAttack ());
+	}
+
+	IEnumerator WaitBeforeAttack()
+	{
+		yield return new WaitForSeconds (3);
+		Patrol ();
+	}
+
+
+	IEnumerator ChargeAttack()
+	{
+		maxSpeed = 0.0f;
+		anim.SetBool ("Charge", true);
+		yield return new WaitForSeconds (2);
+		anim.SetBool ("Charge", false);
+		maxSpeed = 5.0f;
+		Debug.Log("Time UP");
+		if (attack == true) 
+		{
+			lastPlayerPosition = targetPlayer.transform.position;
+
+			Vector2 direction = new Vector2(targetPlayer.position.x, this.transform.position.y);
+			transform.position = Vector2.MoveTowards(transform.position, direction, maxSpeed * Time.deltaTime);
+		}
+
+	}
+		
+}
