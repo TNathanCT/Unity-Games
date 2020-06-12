@@ -1,0 +1,33 @@
+uttonusing System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
+
+public class ButtonControl : MonoBehaviour
+{
+
+    public GameObject menuPanel;
+
+    void Start(){
+        menuPanel.SetActive(false);
+
+    }
+
+
+    public void ResetBtn()
+    {
+        SceneManager.LoadScene("Main");
+    }
+
+
+
+    public void Play()
+    {
+        GameControl.nofPlayers = 2;
+        SceneManager.LoadScene("Main");
+    }
+
+}
+
