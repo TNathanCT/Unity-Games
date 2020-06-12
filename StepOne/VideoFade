@@ -1,0 +1,49 @@
+using UnityEngine;
+using System.Collections;
+using UnityEngine.UI;
+
+public class VideoFade : MonoBehaviour {
+
+	//Ce script permet le fondu avant les vidéos
+
+	public Image fade;
+
+	private float fadingTime;
+	private bool isFading;
+	private float alpha = 0;
+	private Color storedColor;
+	private float alphaEnd;
+	private bool isReset;
+
+	//----- alpha fade : l'alpha a la fin du fondu 
+	//----- timer : le temps pour faire le fondu
+	//----- reset : est-ce qu'on fait disparaitre le fondu a la fin de la méthode
+	public void StartFade (float alphaFade,float timer,bool reset) 
+	{
+		alphaEnd = alphaFade;
+		fadingTime = timer;
+		isReset = reset;
+		isFading = true;
+	}
+
+
+	void Update () {
+		if(alpha < alphaEnd && isFading)
+		{
+			alpha = Mathf.MoveTowards(alpha,alphaEnd,Time.unscaledDeltaTime/fadingTime);
+			fade.color = new Color(0,0,0,alpha);
+		}
+		else
+		{
+			if(isFading)
+			{
+				isFading = false;
+				if(isReset)
+				{
+					fade.color = new Color(0,0,0,0);
+				}
+				alpha = 0;
+			}
+		}
+	}
+}
