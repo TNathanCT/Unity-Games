@@ -1,0 +1,206 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+
+public class MarketManager : MonoBehaviour
+{
+    public GameObject[] displayCharacters = new GameObject[5];
+    public GameObject[] characterChoice = new GameObject[5];
+    public int selectCharacter = 0;
+
+  
+    int savedListCount;
+    public GameObject priceGO;
+    public Text priceTag;
+    public GameObject ButtonPurchase;
+    public GameObject ButtonEquip;
+
+
+    int currentBalance;
+    public Text balanceText;
+
+    public int equippedCharacter = 0;
+
+
+    private void Start()
+    {
+
+        PlayerPrefs.SetInt("currency", 30);
+
+        equippedCharacter = PlayerPrefs.GetInt("equipped"); 
+        currentBalance = PlayerPrefs.GetInt("currency");
+        balanceText.text = currentBalance.ToString(); 
+        Constants.inMarket = true;
+        RotateThroughCharacters();
+        GetPurchasedCharacters();
+        StartCoroutine(SelectCharacterinList());
+
+        for(int i = 0; i <characterChoice.Length; i++)
+        {
+            characterChoice[i].GetComponent<BoughtCharacter>().GetCondition(i);
+        }
+
+    }
+
+
+    void DisplayPricesofUnownedCharacters(int selected)
+    {
+        
+            if (characterChoice[selected].GetComponent<BoughtCharacter>().hasbeenBought == false)
+            {
+                priceGO.SetActive(true); priceTag.enabled = true; ButtonEquip.SetActive(false); ButtonPurchase.SetActive(true);
+                priceTag.text = GetCost(selected).ToString();
+                
+            }
+
+            else if(characterChoice[selected].GetComponent<BoughtCharacter>().hasbeenBought == true)
+            {
+                priceGO.SetActive(false); priceTag.enabled = false;
+                ButtonEquip.SetActive(true); ButtonPurchase.SetActive(false);
+            
+        }
+      
+    }
+
+    public static int GetCost(int price)
+    {
+        switch (price)
+        {
+            default:
+            case 1: return 20;
+            case 2: return 100;
+            case 3: return 0;
+            case 4: return 0;
+
+        }
+    }
+
+
+
+    public IEnumerator SelectCharacterinList()
+    {
+        while(Constants.inMarket == true)
+        {
+            RotateThroughCharacters();
+  
+            yield return null;
+        }
+    }
+
+
+
+    public void GetPurchasedCharacters()
+    {
+        for(int i = 0; i<characterChoice.Length; i++)
+        {
+            characterChoice[i].GetComponent<BoughtCharacter>().hasbeenBought = characterChoice[i].GetComponent<BoughtCharacter>().GetCondition(i);
+        }
+    }
+
+    public void BuyCharacter(int selected)
+    {
+        
+        selected = selectCharacter;
+        
+        if (currentBalance>= GetCost(selected))
+        {
+            currentBalance -= GetCost(selected);
+            PlayerPrefs.SetInt("currency", currentBalance);
+            balanceText.text = currentBalance.ToString();
+            StartCoroutine(characterChoice[selected].GetComponent<BoughtCharacter>().SetCondition(selected));
+
+            characterChoice[selected].GetComponent<BoughtCharacter>().hasbeenBought = characterChoice[selected].GetComponent<BoughtCharacter>().GetCondition(selected);
+            
+        }
+        else{
+
+        }
+    }
+
+    public void EquipCharacter(int selected) {
+        selected = selectCharacter;
+        if (characterChoice[selected].GetComponent<BoughtCharacter>().hasbeenBought == true)
+        {
+
+            PlayerPrefs.SetInt("equipped", selected);
+        }
+        else
+        {
+
+        }
+    }
+
+    
+
+    void RotateThroughCharacters()
+    {
+        for (int i = 0; i < displayCharacters.Length; i++)
+        {
+            if (i == selectCharacter)
+            {
+                DisplayPricesofUnownedCharacters(i);
+                displayCharacters[i].gameObject.SetActive(true);
+                characterChoice[i].GetComponent<RectTransform>().localScale = new Vector3(1.5f, 1.5f, 1);
+
+
+            }
+
+            else
+            {
+
+                displayCharacters[i].gameObject.SetActive(false);
+                characterChoice[i].GetComponent<RectTransform>().localScale = new Vector3(1f, 1f, 1);
+            }
+            
+        }
+    }
+
+
+    public void CharacterSelectForward()
+    {
+        if(selectCharacter < 4)
+        {
+            selectCharacter += 1;
+            RotateThroughCharacters();
+        }
+
+        else
+        {
+            selectCharacter = 4;
+            RotateThroughCharacters();
+        }
+   
+    }
+
+    public void CharacterSelectBackwards()
+    {
+        if (selectCharacter > 0)
+        {
+            selectCharacter -= 1;
+            RotateThroughCharacters();
+        }
+
+        else
+        {
+            selectCharacter = 0;
+            RotateThroughCharacters();
+        }
+    }
+
+    public void GoBack()
+    {
+
+        SceneManager.LoadScene("mainScene");
+    }
+
+ 
+
+
+
+
+
+}
+
+
